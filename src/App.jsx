@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import CardGrid from "./components/CardGrid";
 
 function App() {
   // Game states:
@@ -41,7 +42,35 @@ function App() {
     fetchCards();
   },[])
 
+  // Generating gameCards when difficulty is selected
 
+  useEffect(() => {
+  if (!difficulty || allCards.length === 0) return;
+
+    let count=0;
+
+    if (difficulty==="easy") count=5;
+    else if (difficulty==="medium") count=8;
+    else if (difficulty==="hard") count=12;
+
+    // shuffling cards:
+    const shuffled = [...allCards].sort(()=>Math.random()-0.5);
+
+    //picking required number of cards:
+    const selectedCards = shuffle.slice(0,count);
+
+    setGameCards(selectedCards);
+    setScore(0);
+    setClickedCards([]);
+    setGameStatus("playing");
+  }, [difficulty, allCards]);
+
+
+  
+
+
+
+  
   return (
     <div>
       <h1>Memory Game</h1>
