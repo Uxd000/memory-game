@@ -12,6 +12,36 @@ function App() {
   const [allCards, setAllCards] = useState([]);
   const [gameCards, setGameCards] = useState([]);
 
+  // Fetching API data from pokeapi.co
+  useEffect(() => {
+    async function fetchCards() {
+      try {
+        const response = await fetch("https://pokeapi.co/api/v2/pokemon?limit=50");
+        const data = await response.json()
+
+        const detailedData = await Promise.all(
+          data.results.map(async (pokemon) => {
+            const res = await fetch(pokemon.url);
+            const pokeData = await res.json();
+
+            return{
+              id: pokeData.id,
+              name: pokeData.name,
+              image: pokeData.sprites.front_default,
+            };
+
+          })
+        );
+
+        setAllCards(detailedData);
+      } catch (error) {
+        console.error("Error fetching cards:",error);
+      }
+    }
+    fetchCards();
+  },[])
+
+
   return (
     <div>
       <h1>Memory Game</h1>
