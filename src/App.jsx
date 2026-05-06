@@ -1,66 +1,62 @@
 import { useState, useEffect } from "react";
 import CardGrid from "./components/CardGrid";
-import Card from "./components/Card";
 import "./App.css";
 
 function App() {
-  // Game states:
+  // States:
   const [score, setScore] = useState(0);
   const [bestScore, setBestScore] = useState(0);
   const [clickedCards, setClickedCards] = useState([]);
   const [difficulty, setDifficulty] = useState(null);
   const [gameStatus, setGameStatus] = useState("idle");
 
-  // Card data:
+  // Card Data:
   const [allCards, setAllCards] = useState([]);
   const [gameCards, setGameCards] = useState([]);
 
-  // Fetching API data from pokeapi.co
+  // Fetching game cards from pokeapi.co
   useEffect(() => {
     async function fetchCards() {
       try {
-        const response = await fetch("https://pokeapi.co/api/v2/pokemon?limit=50");
-        const data = await response.json()
+        const response = await fetch(
+          "https://pokeapi.co/api/v2/pokemon?limit=50"
+        );
+        const data = await response.json();
 
         const detailedData = await Promise.all(
           data.results.map(async (pokemon) => {
             const res = await fetch(pokemon.url);
             const pokeData = await res.json();
 
-            return{
+            return {
               id: pokeData.id,
               name: pokeData.name,
               image: pokeData.sprites.front_default,
             };
-
           })
         );
 
         setAllCards(detailedData);
       } catch (error) {
-        console.error("Error fetching cards:",error);
+        console.error("Error fetching cards:", error);
       }
     }
+
     fetchCards();
-  },[])
+  }, []);
 
-  // Generating gameCards when difficulty is selected
-
+  // Generating game cards
   useEffect(() => {
-  if (!difficulty || allCards.length === 0) return;
+    if (!difficulty || allCards.length === 0) return;
 
-    let count=0;
+    let count = 0;
 
-    if (difficulty==="easy") count=5;
-    else if (difficulty==="medium") count=8;
-    else if (difficulty==="hard") count=12;
+    if (difficulty === "easy") count = 5;
+    else if (difficulty === "medium") count = 8;
+    else if (difficulty === "hard") count = 12;
 
-    // shuffling cards:
-    const shuffled = [...allCards].sort(()=>Math.random()-0.5);
-
-    //picking required number of cards:
-    const selectedCards = shuffled.slice(0,count);
-    console.log(gameCards);
+    const shuffled = [...allCards].sort(() => Math.random() - 0.5);
+    const selectedCards = shuffled.slice(0, count);
 
     setGameCards(selectedCards);
     setScore(0);
@@ -68,45 +64,39 @@ function App() {
     setGameStatus("playing");
   }, [difficulty, allCards]);
 
-  // Handling logic for when user clicks a card
-
-  function handleCardClick(id){
+  // handling clicks
+  function handleCardClick(id) {
     if (gameStatus !== "playing") return;
 
-    if (clickedCards.includes(id)){
-      if (score > bestScore){
-        setBestScore(score);
-      }
+    if (clickedCards.includes(id)) {
+      if (score > bestScore) setBestScore(score);
+
       setScore(0);
       setClickedCards([]);
 
-      const reshuffled = [...gameCards].sort(() => Math.random - 0.5);
+      const reshuffled = [...gameCards].sort(() => Math.random() - 0.5);
       setGameCards(reshuffled);
+
       return;
     }
 
-    const newClickedCards = [...clickedCards,id];
-    setClickedCards(newClickedCards);
+    const newClicked = [...clickedCards, id];
+    setClickedCards(newClicked);
 
     const newScore = score + 1;
     setScore(newScore);
 
-    if (newClickedCards.length === gameCards.length){
+    if (newClicked.length === gameCards.length) {
       setGameStatus("won");
-
-      if (newScore > bestScore){
-        setBestScore(newScore);
-      }
-
+      if (newScore > bestScore) setBestScore(newScore);
       return;
     }
 
-    const shuffled = [...gameCards].sort(() => Math.random()-0.5);
+    const shuffled = [...gameCards].sort(() => Math.random() - 0.5);
     setGameCards(shuffled);
   }
 
-  // Reseting the Game
-
+  // Reseting game
   function resetGame() {
     setScore(0);
     setClickedCards([]);
@@ -114,37 +104,64 @@ function App() {
     setDifficulty(null);
   }
 
-  
   return (
-    <div>
-      <div className="header">
-        <h1>PokéMemory</h1>
+    <div className="app">
+      <div className="container">
 
-        <div className="scoreboard">
-          <p>Score: {score}</p>
-          <p>Best Score: {bestScore}</p>
-        </div>
+        {/* Primary landing screen */}
+        {!difficulty && (
+          <div className="menu">
+            <h1>PokéMemory</h1>
+
+            <p className="subtitle">
+              Select a difficulty level
+            </p>
+
+            <div className="menu-buttons">
+              <button onClick={() => setDifficulty("easy")}>Easy</button>
+              <button onClick={() => setDifficulty("medium")}>Medium</button>
+              <button onClick={() => setDifficulty("hard")}>Hard</button>
+            </div>
+
+            <a
+              href="https://github.com/Uxd000/memory-game"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="github-link"
+            >
+              GitHub Repo
+            </a>
+          </div>
+        )}
+
+        {/* GAME SCREEN */}
+        {difficulty && gameStatus !== "won" && (
+          <>
+            <div className="header">
+              <h1>PokéMemory</h1>
+
+              <div className="scoreboard">
+                <p>Score: {score}</p>
+                <p>Best Score: {bestScore}</p>
+              </div>
+            </div>
+
+            <CardGrid
+              gameCards={gameCards}
+              onCardClick={handleCardClick}
+            />
+          </>
+        )}
+
+        {/* Win prompt*/}
+        {gameStatus === "won" && (
+          <div className="menu">
+            <h2>🎉 You Win!</h2>
+            <button onClick={resetGame}>Play Again</button>
+          </div>
+        )}
+
       </div>
-
-      {!difficulty && (
-        <div>
-          <button onClick={() => setDifficulty("easy")}>Easy</button>
-          <button onClick={() => setDifficulty("medium")}>Medium</button>
-          <button onClick={() => setDifficulty("hard")}>Hard</button>
-        </div>
-      )}
-
-      {gameStatus === "playing" && (
-        <CardGrid gameCards={gameCards} onCardClick={handleCardClick} />
-      )}
-
-      {gameStatus === "won" && (
-        <div>
-          <h2>🎉 You Win!</h2>
-          <button onClick={resetGame}>Play Again</button>
-        </div>
-      )}
-
     </div>
   );
 }
