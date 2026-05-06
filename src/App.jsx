@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import CardGrid from "./components/CardGrid";
 import Card from "./components/Card";
+import "./App.css";
 
 function App() {
   // Game states:
@@ -104,14 +105,26 @@ function App() {
     setGameCards(shuffled);
   }
 
+  // Reseting the Game
+
+  function resetGame() {
+    setScore(0);
+    setClickedCards([]);
+    setGameStatus("idle");
+    setDifficulty(null);
+  }
+
   
   return (
     <div>
-      <h1>Memory Game</h1>
+      <div className="header">
+        <h1>PokéMemory</h1>
 
-      <p>Score: {score}</p>
-      <p>Best Score: {bestScore}</p>
-      <p>Status: {gameStatus}</p>
+        <div className="scoreboard">
+          <p>Score: {score}</p>
+          <p>Best Score: {bestScore}</p>
+        </div>
+      </div>
 
       {!difficulty && (
         <div>
@@ -128,7 +141,7 @@ function App() {
       {gameStatus === "won" && (
         <div>
           <h2>🎉 You Win!</h2>
-          <button onClick={() => setDifficulty(null)}>Play Again</button>
+          <button onClick={resetGame}>Play Again</button>
         </div>
       )}
 
