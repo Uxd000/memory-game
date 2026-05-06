@@ -1,8 +1,10 @@
+import Card from "./Card";
+
 function CardGrid({gameCards,onCardClick}){
     return(
         <div className="grid">
             {gameCards.map((card) => (
-                <card
+                <Card
                     key={card.id}
                     id={card.id}
                     name={card.name}

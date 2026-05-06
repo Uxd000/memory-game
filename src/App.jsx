@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import CardGrid from "./components/CardGrid";
+import Card from "./components/Card";
 
 function App() {
   // Game states:
@@ -57,7 +58,8 @@ function App() {
     const shuffled = [...allCards].sort(()=>Math.random()-0.5);
 
     //picking required number of cards:
-    const selectedCards = shuffle.slice(0,count);
+    const selectedCards = shuffled.slice(0,count);
+    console.log(gameCards);
 
     setGameCards(selectedCards);
     setScore(0);
@@ -65,10 +67,42 @@ function App() {
     setGameStatus("playing");
   }, [difficulty, allCards]);
 
+  // Handling logic for when user clicks a card
 
-  
+  function handleCardClick(id){
+    if (gameStatus !== "playing") return;
 
+    if (clickedCards.includes(id)){
+      if (score > bestScore){
+        setBestScore(score);
+      }
+      setScore(0);
+      setClickedCards([]);
 
+      const reshuffled = [...gameCards].sort(() => Math.random - 0.5);
+      setGameCards(reshuffled);
+      return;
+    }
+
+    const newClickedCards = [...clickedCards,id];
+    setClickedCards(newClickedCards);
+
+    const newScore = score + 1;
+    setScore(newScore);
+
+    if (newClickedCards.length === gameCards.length){
+      setGameStatus("won");
+
+      if (newScore > bestScore){
+        setBestScore(newScore);
+      }
+
+      return;
+    }
+
+    const shuffled = [...gameCards].sort(() => Math.random()-0.5);
+    setGameCards(shuffled);
+  }
 
   
   return (
@@ -86,6 +120,18 @@ function App() {
           <button onClick={() => setDifficulty("hard")}>Hard</button>
         </div>
       )}
+
+      {gameStatus === "playing" && (
+        <CardGrid gameCards={gameCards} onCardClick={handleCardClick} />
+      )}
+
+      {gameStatus === "won" && (
+        <div>
+          <h2>🎉 You Win!</h2>
+          <button onClick={() => setDifficulty(null)}>Play Again</button>
+        </div>
+      )}
+
     </div>
   );
 }
